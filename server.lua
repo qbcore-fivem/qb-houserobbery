@@ -40,6 +40,21 @@ end)
 RegisterNetEvent('qb-houserobbery:server:searchFurniture', function(cabin, house)
     local src = source
     local player = exports['qb-core']:GetPlayer(src)
+
+    -- Validate house and cabin exist
+    if not Config.Houses[house] or not Config.Houses[house].furniture[cabin] then return end
+
+    -- Validate the house is currently opened (player entered legitimately)
+    if not Config.Houses[house]['opened'] then return end
+
+    -- Prevent re-searching the same furniture piece
+    if Config.Houses[house]['furniture'][cabin]['searched'] then return end
+
+    -- Proximity check: player must be near the house coords
+    local houseCoords = Config.Houses[house]['coords']
+    local playerCoords = GetEntityCoords(GetPlayerPed(src))
+    if #(vector3(playerCoords.x, playerCoords.y, playerCoords.z) - vector3(houseCoords.x, houseCoords.y, houseCoords.z)) > Config.MinZOffset then return end
+
     local tier = Config.Houses[house].tier
     local availableItems = Config.Rewards[tier][Config.Houses[house].furniture[cabin].type]
     local itemCount = math.random(0, 3)
